@@ -1,0 +1,10 @@
+#include "inotifyhandler.h"
+
+inotifyhandler::inotifyhandler()
+{
+    
+}
+
+void inotifyhandler::filemodified(string path){
+    
+}

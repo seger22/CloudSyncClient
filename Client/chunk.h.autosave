@@ -1,0 +1,20 @@
+#ifndef CHUNK_H
+#define CHUNK_H
+
+#include<stdio.h>
+#include<iostream>
+#include<sys/stat.h>
+#include<boost/asio.hpp>
+#include<boost/serialization/access.hpp>
+
+using namespace std;
+
+class chunk
+{
+public:
+    
+    
+};
+
+
+#endif // CHUNK_H

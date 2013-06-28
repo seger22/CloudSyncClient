@@ -1,0 +1,12 @@
+#ifndef LIBINOTIFY_GLOBAL_H
+#define LIBINOTIFY_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(LIBINOTIFY_LIBRARY)
+#  define LIBINOTIFYSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define LIBINOTIFYSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // LIBINOTIFY_GLOBAL_H
