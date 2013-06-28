@@ -279,6 +279,7 @@ vector<int> Client::read_unmatched_chunks()
     boost::system::error_code err;
 
     vector<int> t;
+    boost::this_thread::sleep(boost::posix_time::seconds(1));
            size_t got_size=socket_.read_some(boost::asio::buffer(data_),err);
 
            string input=data_;
