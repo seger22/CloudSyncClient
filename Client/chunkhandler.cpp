@@ -164,22 +164,19 @@ chunk_directory(const char *dpath)
 vector<chunkdat> unmatchedChunkData(vector<int> indexes,vector<Chunk*> chunkdetails,string path){
 vector<chunkdat> chunkData;
 
+FILE* is = fopen(path.c_str(), "r");
+    DataSource* ds= new RawFileDataSource(is);
+
 for(int y=0;y<indexes.size();y++){
     chunkdat ch_data;
-    FILE* is = fopen(path.c_str(), "r");
-        DataSource* ds= new RawFileDataSource(is);
-
     int value = indexes[y];
-    int off_val=0;
-    for(int x=0; x< (chunkdetails[value]->getOffset()+chunkdetails[value]->getLength());x++){
-        if(chunkdetails[value]->getOffset()<=x){
-           // chunking +=ds->getByte();
+     fseek ( is , chunkdetails[value]->getOffset() , SEEK_SET );
+
+     int off_val=0;
+    for(int x=0; x<chunkdetails[value]->getLength();x++){
             ch_data.data[off_val]=ds->getByte();            
             off_val++;
-        }
 
-        else
-            ds->getByte();
     }
     ch_data.chunk_size=chunkdetails[value]->getLength();
 chunkData.push_back(ch_data);
