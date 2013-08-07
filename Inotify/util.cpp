@@ -38,7 +38,7 @@ string Util::get_relative_path(string abosolute_path){
  */
 string Util::get_root_path(){
 // to do , read from external file
-    string root_dir="/home/satthy/Client";
+    string root_dir="/home/mayuresan/Project/SyncSource";
     return   root_dir;
 }
 

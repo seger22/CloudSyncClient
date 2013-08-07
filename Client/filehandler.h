@@ -4,7 +4,7 @@
 #include<boost/asio.hpp>
 #include<sys/stat.h>
 #include<boost/lexical_cast.hpp>
-#include "chunkhandler.h"
+#include "filechunkreader.h"
 #include "clienthandler.h"
 #include "chunkdat.h"
 
@@ -25,6 +25,9 @@ public:
     void dir_moved(string oldpath, string newpath);
     void dir_rename(string path, string oldname, string newname);
 
+    vector<u_int64_t> get_chunk_hashes(string filepath, string filename);
+
+
     vector<int> get_indexes();
 
     void stop_client();
@@ -38,6 +41,7 @@ private:
     clienthandler* client;
     vector<Chunk*> objects;
     vector<int> unmatched_indexes;
+    vector<bool> unmatchedHashIndex;
     string dir;
 };
 

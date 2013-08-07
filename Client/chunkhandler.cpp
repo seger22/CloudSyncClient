@@ -161,28 +161,42 @@ chunk_directory(const char *dpath)
   closedir(dirp);
 }
 
-vector<chunkdat> unmatchedChunkData(vector<int> indexes,vector<Chunk*> chunkdetails,string path){
+vector<chunkdat> unmatchedChunkData(vector<bool> indexes,vector<Chunk*> chunkdetails,string path, int* total_size){
 vector<chunkdat> chunkData;
-
-FILE* is = fopen(path.c_str(), "r");
-    DataSource* ds= new RawFileDataSource(is);
+ifstream in_file(path.c_str(),std::ifstream::binary);
 
 for(int y=0;y<indexes.size();y++){
     chunkdat ch_data;
-    int value = indexes[y];
-     fseek ( is , chunkdetails[value]->getOffset() , SEEK_SET );
+  //  FILE* is = fopen(path.c_str(), "r");
+  //      DataSource* ds= new RawFileDataSource(is);
 
-     int off_val=0;
-    for(int x=0; x<chunkdetails[value]->getLength();x++){
-            ch_data.data[off_val]=ds->getByte();            
-            off_val++;
+  //  int value = indexes[y];
+  //  int off_val=0;
+  //  for(int x=0; x< (chunkdetails[value]->getOffset()+chunkdetails[value]->getLength());x++){
+  //      if(chunkdetails[value]->getOffset()<=x){
+           // chunking +=ds->getByte();
+  //          ch_data.data[off_val]=ds->getByte();
+  //          off_val++;
+  //      }
 
-    }
+    //    else
+    //        ds->getByte();
+    if(!indexes[y]){
+    int value = y;
+    in_file.seekg(chunkdetails[value]->getOffset(),in_file.beg);
+    in_file.read(ch_data.data,chunkdetails[value]->getLength());
+
+   // }
     ch_data.chunk_size=chunkdetails[value]->getLength();
+    total_size+=chunkdetails[value]->getLength();
+    cout<<"Read chunk No:"<<value<<endl;
 chunkData.push_back(ch_data);
+    }
 }
+in_file.close();
 return chunkData;
 }
+
 
 string fileChecksum(const char *path)
 {

@@ -31,9 +31,10 @@ void clienthandler::stop_client()
     thread_->join();
 }
 
-void clienthandler::send_chunks(vector<chunkdat> chunks)
+void clienthandler::send_chunks(vector<chunkdat> chunks,int total_size)
 {
-    session_client->send_chunk_header(chunks);
+    session_client->send_chunk_header(chunks,total_size);
+  //  session_client->send_chunks(chunks);
 
 }
 
@@ -42,7 +43,11 @@ void clienthandler::send_chunk_hashes(vector<u_int64_t> chunk_hashes)
     session_client->send_chunk_hashes(chunk_hashes);
 }
 
-vector<int> clienthandler::read_unmatched_hashes()
+void clienthandler::send_block_hashes(vector< vector <u_int32_t> > t){
+    session_client->send_block_hashes(t);
+}
+
+vector<bool> clienthandler::read_unmatched_hashes()
 {
     return session_client->read_unmatched_chunks();
 }

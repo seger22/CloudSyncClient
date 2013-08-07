@@ -32,37 +32,39 @@ public:
     void handle_connect(const boost::system::error_code& err, tcp::resolver::iterator endpoint_iterator);
     void handle_write_request(const boost::system::error_code& err);
     void send_request(string data);
-    void send_chunk_header(vector<chunkdat> strings);
+    void send_chunk_header(vector<chunkdat> strings, int total_size);
+    void send_chunks(vector<chunkdat> chunks);
     void send_chunk_data(string out_data);
     vector<string> get_block_data();
     void send_chunk_hashes(vector<u_int64_t> chunkHashes);
-    void send_chunks(vector<string> chunks);
-    vector<int> read_unmatched_chunks();
+    void send_chunk(chunkdat chunk);
+    vector<bool> read_unmatched_chunks();
     bool send_buffer(string buffer);
-    //void send_block_data();
+    void handle_write_chunk(const boost::system::error_code& error, string caller);
     void send_file(string path, string filename);
     void stop_client();
-    void start_client();
-    void printA(int num);
-    void printB();
-    void printC();
-    void addEvent();
+    void start_client();   
+    void addChunkToQueue(chunkdat chunk);
     void send_string_vector(vector<string> strings);
     string get_data_from_server();
-
+    template <class T>
+    bool send_vector(vector<T> elements);
+    void send_block_hashes(vector< vector < u_int32_t> > t);
 
 private:
     boost::asio::io_service io_service_;
+    bool sending;
     tcp::resolver resolver_;
      tcp::socket socket_;
      std::string change_request;
    // vector<chunk> chunks_;
      boost::asio::streambuf request_;
-     enum { max_length = 1024 };
+     enum { max_length = 10240 };
      char data_[max_length];
      string watch_dir;
      string chunk[65536];
      int chunk_max_length=65536;
+     queue<chunkdat> chunkq;
 //boost::asio::io_service::work client_work(client_io_service);
     //boost::asio::io_service::work client_work;
 

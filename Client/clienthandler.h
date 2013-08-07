@@ -25,12 +25,13 @@ public:
                return instance;
            }*/
     void send_chunk_hashes(vector<u_int64_t> chunk_hashes);
-    void send_chunks(vector<chunkdat> chunks);
+    void send_chunks(vector<chunkdat> chunks, int total_size);
     void send_data(string msg);
-    vector<int> read_unmatched_hashes();
+    vector<bool> read_unmatched_hashes();
     string receive_data();
     void stop_client();
     void send_file(string path,string name);
+    void send_block_hashes(vector< vector <u_int32_t > > t);
 
 
 private:

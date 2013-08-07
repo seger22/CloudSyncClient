@@ -18,14 +18,16 @@ SOURCES += \
     clienthandler.cpp \
     chunkhandler.cpp \
     chunkdat.cpp \
-    filehandler.cpp
+    filehandler.cpp \
+    filechunkreader.cpp
 
 HEADERS += \
     client.h \
     clienthandler.h \
     chunkhandler.h \
     chunkdat.h \
-    filehandler.h
+    filehandler.h \
+    filechunkreader.h
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../../usr/lib/release/ -lboost_system
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../../usr/lib/debug/ -lboost_system

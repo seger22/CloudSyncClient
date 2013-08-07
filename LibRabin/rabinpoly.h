@@ -28,6 +28,8 @@
 #include <stdio.h>
 #include <string.h>
 
+
+
 #define DEFAULT_WINDOW_SIZE 16
 
 u_int64_t polymod (u_int64_t nh, u_int64_t nl, u_int64_t d);

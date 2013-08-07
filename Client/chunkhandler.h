@@ -7,6 +7,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "chunkdat.h"
+#include "librsync.h"
 
 #include<fstream>
 #include <string>
@@ -73,6 +74,25 @@ return path;
 
 };
 
+class BlockChecksum
+{
+private :
+  unsigned int weeksum;
+  rs_strong_sum_t strongsum;
+public:
+  BlockChecksum(unsigned int wsum,rs_strong_sum_t stsum){
+      weeksum=wsum;
+      strongsum = stsum;
+  }
+
+  unsigned int getWeeksum(){
+      return weeksum;
+  }
+
+  rs_licence_string getStrongsum(){
+      return strongsum;
+  }
+};
 
 class Checksum
 {
@@ -225,5 +245,5 @@ vector<Chunk*> chunk_file(const char *path);
 void
 chunk_directory(const char *dpath);
 
-vector<chunkdat> unmatchedChunkData(vector<int> t, vector<Chunk *> c, string path);
+vector<chunkdat> unmatchedChunkData(vector<bool> t, vector<Chunk *> c, string path, int *total_size);
 string fileChecksum(const char *path);
