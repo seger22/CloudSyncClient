@@ -2,13 +2,45 @@
 #define FILEHANDLER_H
 
 #include<boost/asio.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include<sys/stat.h>
+#include<string.h>
 #include<boost/lexical_cast.hpp>
 #include "filechunkreader.h"
 #include "clienthandler.h"
+#include "librsync.h"
 #include "chunkdat.h"
 
+
 using namespace std;
+
+class BlockChecksumSerial{
+public:
+      rs_strong_sum_t strongsum;
+
+private :
+  friend class boost::serialization::access;
+  unsigned int weaksum;
+      template<class Archive>
+      void serialize(Archive & ar, const unsigned int version)
+      {
+          ar & weaksum;
+          ar & strongsum;
+      }
+public:
+      BlockChecksumSerial(unsigned int wsum, rs_strong_sum_t strsum):weaksum(wsum)
+  {
+       memcpy(strongsum,strsum,16);
+  }
+
+  unsigned int getWeeksum(){
+      return weaksum;
+  }
+
+};
+
+
 
 class Filehandler
 {
@@ -26,6 +58,7 @@ public:
     void dir_rename(string path, string oldname, string newname);
 
     vector<u_int64_t> get_chunk_hashes(string filepath, string filename);
+    vector<BlockChecksumSerial> blockChecksumToSerial(vector<BlockChecksum> blocks);
 
 
     vector<int> get_indexes();

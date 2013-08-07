@@ -2,12 +2,13 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     LibInotify \
+LibChecksum \
     Client \
     Inotify \
     Start \
     LibRabin \
-    LibSha \
-    LibChecksum
+    LibSha
+
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../usr/lib/release/ -lboost_thread

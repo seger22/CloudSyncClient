@@ -184,7 +184,7 @@ for(int y=0;y<indexes.size();y++){
     if(!indexes[y]){
     int value = y;
     in_file.seekg(chunkdetails[value]->getOffset(),in_file.beg);
-    in_file.read(ch_data.data,chunkdetails[value]->getLength());
+    in_file.read(ch_data.data,chunkdetails[value]->getLength());       
 
    // }
     ch_data.chunk_size=chunkdetails[value]->getLength();
@@ -195,6 +195,55 @@ chunkData.push_back(ch_data);
 }
 in_file.close();
 return chunkData;
+}
+
+
+
+vector<Chunk> combineUnmatchedChunks(vector<bool> unmatched, vector<Chunk*> chunkdetails){
+    vector<Chunk>  combinedChunks;
+    for(int i=0;i<unmatched.size();i++){
+        if(unmatched[i]){
+            Chunk* firstChunk=new Chunk(chunkdetails[i]->getHash(),chunkdetails[i]->getOffset(),chunkdetails[i]->getLength(),chunkdetails[i]->getPath());
+
+            while(unmatched[i+1]){
+                firstChunk->setLength(chunkdetails[i+1]->getLength()+firstChunk->getLength());
+                i++;
+            }
+            combinedChunks.push_back(*firstChunk);
+        }
+    }
+    return combinedChunks;
+}
+
+vector< vector < BlockChecksum> > getBlockChecksum(vector<Chunk> unmatchedChunks, string filepath){
+    vector< vector < BlockChecksum> > blockChecksums;
+    int blockSize=700;
+    ifstream in_file(filepath.c_str(),std::ifstream::binary);
+
+    for(int i=0; i<unmatchedChunks.size();i++){
+        vector < BlockChecksum > chunkDivision;
+        in_file.seekg(unmatchedChunks[i].getOffset(),in_file.beg);
+        int k;
+        char data[blockSize];
+        for(k=0;k<unmatchedChunks[i].getLength();k+=blockSize){
+            in_file.read(data,blockSize);
+            unsigned int weaksum=rs_calc_weak_sum(&data,blockSize);
+            BlockChecksum block(weaksum);
+            rs_calc_strong_sum(&data,blockSize,&block.strongsum);
+
+            chunkDivision.push_back(block);
+        }
+        in_file.read(data,unmatchedChunks[i].getLength()+blockSize-k);
+        unsigned int weaksum=rs_calc_weak_sum(&data,blockSize);
+        BlockChecksum block(weaksum);
+        rs_calc_strong_sum(&data,blockSize,&block.strongsum);
+
+        chunkDivision.push_back(block);
+
+    blockChecksums.push_back(chunkDivision);
+    }
+    in_file.close();
+    return blockChecksums;
 }
 
 
