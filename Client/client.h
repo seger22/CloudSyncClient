@@ -18,6 +18,7 @@
 #include <iostream>
 #include<sstream>
 #include <functional>
+#include "blockChecksumSerial.h"
 #include "chunkdat.h"
 
 using boost::asio::ip::tcp;
@@ -49,7 +50,7 @@ public:
     string get_data_from_server();
     template <class T>
     bool send_vector(vector<T> elements);
-    void send_block_hashes(vector< vector < u_int32_t> > t);
+    void send_block_hashes(vector< vector < BlockChecksumSerial> > t);
 
 private:
     boost::asio::io_service io_service_;

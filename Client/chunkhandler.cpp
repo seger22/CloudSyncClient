@@ -200,22 +200,27 @@ return chunkData;
 
 
 vector<Chunk> combineUnmatchedChunks(vector<bool> unmatched, vector<Chunk*> chunkdetails){
+    cout<<"Merging chunks\n";
     vector<Chunk>  combinedChunks;
     for(int i=0;i<unmatched.size();i++){
-        if(unmatched[i]){
+        if(!unmatched[i]){
+            cout<<"Matched\n";
             Chunk* firstChunk=new Chunk(chunkdetails[i]->getHash(),chunkdetails[i]->getOffset(),chunkdetails[i]->getLength(),chunkdetails[i]->getPath());
 
-            while(unmatched[i+1]){
+           while(i+1<unmatched.size() && !unmatched[i+1]){
                 firstChunk->setLength(chunkdetails[i+1]->getLength()+firstChunk->getLength());
                 i++;
             }
             combinedChunks.push_back(*firstChunk);
         }
+        else
+            cout<<"unmatched!!!\n";
     }
     return combinedChunks;
 }
 
 vector< vector < BlockChecksum> > getBlockChecksum(vector<Chunk> unmatchedChunks, string filepath){
+    cout<<"Breaking into blocks and calculating checksums\n";
     vector< vector < BlockChecksum> > blockChecksums;
     int blockSize=700;
     ifstream in_file(filepath.c_str(),std::ifstream::binary);

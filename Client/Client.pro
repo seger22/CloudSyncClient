@@ -27,7 +27,8 @@ HEADERS += \
     chunkhandler.h \
     chunkdat.h \
     filehandler.h \
-    filechunkreader.h
+    filechunkreader.h \
+    blockChecksumSerial.h
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../../usr/lib/release/ -lboost_system
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../../usr/lib/debug/ -lboost_system

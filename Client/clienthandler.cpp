@@ -43,7 +43,7 @@ void clienthandler::send_chunk_hashes(vector<u_int64_t> chunk_hashes)
     session_client->send_chunk_hashes(chunk_hashes);
 }
 
-void clienthandler::send_block_hashes(vector< vector <u_int32_t> > t){
+void clienthandler::send_block_hashes(vector<vector<BlockChecksumSerial> > t){
     session_client->send_block_hashes(t);
 }
 
@@ -56,4 +56,5 @@ void clienthandler::send_file(string path, string name)
 {
     session_client->send_file(path,name);
 }
+
 

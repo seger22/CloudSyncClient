@@ -276,8 +276,8 @@ void Client::send_chunk_hashes(vector<u_int64_t> chunkHashes){
 }
 
 
-void Client::send_block_hashes(vector<vector<u_int32_t> > t){
-    this->send_vector< vector <u_int32_t > > (t);
+void Client::send_block_hashes(vector<vector<BlockChecksumSerial> > t){
+    this->send_vector< vector <BlockChecksumSerial> > (t);
 }
 
 template <class T>

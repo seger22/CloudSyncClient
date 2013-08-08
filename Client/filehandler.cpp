@@ -22,8 +22,10 @@ void Filehandler::file_modified(string path, string filename){
     cout<<"Sent : " << hashvector.size() << " hashes successfully!!"<<endl;
 
     vector<bool> v=client->read_unmatched_hashes();
+
     client->send_data("OK");
     unmatchedHashIndex.insert(unmatchedHashIndex.end(),v.begin(),v.end());
+    cout<<"Got boolean vector with size:"<<unmatchedHashIndex.size()<<endl;
     cout<<"Recieved unmatched chunk indexes successfully!"<<endl;
     cout<<"Reading unmatched chunk data..."<<endl;
     int total_size=0;
@@ -41,16 +43,19 @@ void Filehandler::file_modified(string path, string filename){
   //  vector<chunkdat> unmatchedData= unmatchedChunkData(unmatchedHashIndex,objects,dir+path+"/"+filename,&total_size);
 
 
-    cout<<"Calculating block checksums\n";
+    cout<<"Calculating block checksums:unmatchedhashindex:"<<unmatchedHashIndex.size()<<"objects:"<<objects.size()<<endl;
     vector<Chunk> combinedchunks = combineUnmatchedChunks(unmatchedHashIndex,objects) ;
     vector< vector < BlockChecksum> > blocksums=getBlockChecksum(combinedchunks,dir+path+"/"+filename);
+    cout<<"Got chunks of blocks: "<<blocksums.size()<<endl;
+    vector< vector < BlockChecksumSerial> > serialblocksums;
+
     for(int i=0;i<blocksums.size();i++){
-        vector<BlockChecksum> blockchecksum=blocksums[i];
-        for(int j=0;j<blockchecksum.size();j++){
-            cout<<"Weak checksum: "<<blockchecksum[i].getWeeksum()<<endl;
-            cout<<"strong checksum: "<<blockchecksum[i].strongsum<<endl;
-        }
+        cout<<"Blocks : "<<blocksums[i].size()<<" from block: "<<i;
+        //vector<BlockChecksum> blockchecksum=blocksums[i];
+        vector<BlockChecksumSerial> serblocks=blockChecksumToSerial(blocksums[i]);
+        serialblocksums.push_back(serblocks);
     }
+client->send_block_hashes(serialblocksums);
     cout<<"Sending unmatched chunk data..."<<endl;
 
   //  client->send_chunks(unmatchedData,total_size);
@@ -65,7 +70,9 @@ vector <BlockChecksumSerial> Filehandler::blockChecksumToSerial(vector<BlockChec
     for(int i=0;i<blocks.size();i++){
         BlockChecksumSerial serialBlock(blocks[i].getWeeksum(),blocks[i].strongsum);
        serialBlocks.push_back(serialBlock);
+       cout<<"Weaksum: "<<blocks[i].getWeeksum()<<endl;
     }
+    return serialBlocks;
 }
 
 

@@ -7,6 +7,7 @@
 #include<iostream>
 #include<vector>
 #include "client.h"
+#include "blockChecksumSerial.h"
 #include "chunkdat.h"
 
 using namespace std;
@@ -31,7 +32,8 @@ public:
     string receive_data();
     void stop_client();
     void send_file(string path,string name);
-    void send_block_hashes(vector< vector <u_int32_t > > t);
+    void send_block_hashes(vector< vector <BlockChecksumSerial > > t);
+
 
 
 private:
