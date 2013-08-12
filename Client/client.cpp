@@ -250,22 +250,6 @@ bool Client::send_buffer(string buffer)
 
 
 void Client::send_chunk_hashes(vector<u_int64_t> chunkHashes){
- /*   std::string outbound_data_;
-    std::ostringstream archive_stream;
-    boost::archive::text_oarchive archive(archive_stream);
-    archive << chunkHashes;
-    outbound_data_ = archive_stream.str();
-    char response[max_length];
-
-    boost::system::error_code err;    
-    boost::asio::streambuf buf;
-    ostream os(&buf);
-    os<<outbound_data_.size()<<"\r\n";
-    //cout<<"Size is:"<<outbound_data_.size()<<endl;
-    boost::asio::write(socket_,buf);
-    boost::asio::write(socket_,boost::asio::buffer(outbound_data_,outbound_data_.size()),err);
-    socket_.read_some(boost::asio::buffer(response),err);
-    */
     bool err=this->send_vector<u_int64_t>(chunkHashes);
     if(err){
        // cout<<"Error occured with "<<err.message()<<endl;
@@ -292,7 +276,8 @@ bool Client::send_vector(vector<T> v){
     boost::system::error_code err;    
     boost::asio::streambuf buf;
     ostream os(&buf);
-    os<<outbound_data_.size()<<"\r\n";    
+    os<<outbound_data_.size()<<"\r\n";
+    cout<<"Size of data sending:"<<outbound_data_.size()<<endl;
     boost::asio::write(socket_,buf);
     boost::asio::write(socket_,boost::asio::buffer(outbound_data_,outbound_data_.size()),err);
     socket_.read_some(boost::asio::buffer(response),err);
@@ -302,8 +287,6 @@ bool Client::send_vector(vector<T> v){
     }
     return true;
 }
-
-
 
 
 

@@ -6,6 +6,11 @@ Filehandler::Filehandler()
     dir="/home/mayuresan/Project/SyncSource";
 }
 
+/**
+ * @brief Filehandler::file_modified
+ * @param path
+ * @param filename
+ */
 void Filehandler::file_modified(string path, string filename){
     client->send_data("filemodified|"+path+"|"+filename);
     vector<u_int64_t> hashvector=get_chunk_hashes(path,filename);
