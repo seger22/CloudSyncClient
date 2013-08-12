@@ -7,9 +7,8 @@
 #include<sys/stat.h>
 #include<string.h>
 #include<boost/lexical_cast.hpp>
-#include "filechunkreader.h"
+#include "chunkhandler.h"
 #include "clienthandler.h"
-#include "librsync.h"
 #include "chunkdat.h"
 
 

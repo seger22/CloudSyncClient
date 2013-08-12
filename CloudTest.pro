@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     LibInotify \
-LibChecksum \
+    LibChecksum \
     Client \
     Inotify \
     Start \

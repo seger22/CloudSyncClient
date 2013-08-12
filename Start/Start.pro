@@ -59,3 +59,4 @@ else:unix: LIBS += -L$$OUT_PWD/../LibChecksum/ -lLibChecksum
 
 INCLUDEPATH += $$PWD/../LibChecksum
 DEPENDPATH += $$PWD/../LibChecksum
+

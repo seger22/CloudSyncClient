@@ -19,10 +19,10 @@ SOURCES += \
 HEADERS +=\
         libchecksum_global.h \
     checksum.h \
-    librsync.h \
     librsync-config.h \
     mdfour.h \
-    rollsum.h
+    rollsum.h \
+    librsync.h
 
 unix:!symbian {
     maemo5 {
