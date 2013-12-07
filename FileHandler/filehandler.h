@@ -5,19 +5,23 @@
 #include<sys/stat.h>
 #include<string.h>
 #include<boost/lexical_cast.hpp>
-#include "chunkhandler.h"
+#include  "chunkhandler.h"
 #include "clienthandler.h"
 #include "librsync.h"
 #include "chunkdat.h"
 #include "blockChecksumSerial.h"
+#include "blockhandler.h"
+#include <boost/thread.hpp>
+#include <dblib.h>
 
 
 using namespace std;
 
-class Filehandler
+class FileHandler
 {
+    
 public:
-    Filehandler();
+    FileHandler();
     void file_create(string path, string filename);
     void file_delete(string path, string filename);  //to-do
     void file_modified(string path, string filename);
@@ -31,10 +35,11 @@ public:
 
     vector<u_int64_t> get_chunk_hashes(string filepath, string filename);
     vector<BlockChecksumSerial> blockChecksumToSerial(vector<BlockChecksum> blocks);
-
+void deleteChunks();
 
     vector<int> get_indexes();
 
+    void processQueue(vector<bool> matchindex);
     void stop_client();
 
     //file_rename
@@ -44,10 +49,15 @@ public:
 
 private:
     clienthandler* client;
-    vector<Chunk*> objects;
+    BlockHandler* blockhandler;
+    vector<Chunk> objects;
     vector<int> unmatched_indexes;
     vector<bool> unmatchedHashIndex;
+    queue<chunkdat> unmatchedChunks;
     string dir;
+    int total_data_sent, total_metadata_sent, total_matched_chunks;
+    DBlib* dblib;
+
 };
 
-#endif // INOTIFYHANDLER_H
+#endif // FILEHANDLER_H

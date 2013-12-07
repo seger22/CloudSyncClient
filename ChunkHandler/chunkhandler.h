@@ -17,6 +17,9 @@
 #include <vector>
 #include <map>
 #include <iterator>
+#include<queue>
+#include "configurationmanager.h"
+#include "deltahandler.h"
 
 
 using namespace std;
@@ -82,19 +85,28 @@ return path;
 class BlockChecksum
 {
 private :
+    unsigned int offset;
+    unsigned int length;
   unsigned int weeksum;
 
 public:
   rs_strong_sum_t strongsum;
-  BlockChecksum(unsigned int wsum){
+  BlockChecksum(unsigned int wsum,unsigned int o, unsigned l){
       weeksum=wsum;
+      offset=o;
+      length=l;
      // strongsum = stsum;
   }
 
   unsigned int getWeeksum(){
       return weeksum;
-  } 
-
+  }
+  unsigned int getOffset(){
+      return offset;
+  }
+  unsigned int getLength(){
+      return length;
+  }
 };
 
 class Checksum
@@ -242,14 +254,20 @@ void printChunkContents(
     const unsigned char* buffer,
     int size);
 
-vector<Chunk*> processChunks(DataSource* ds,const char *path);
-vector<Chunk*> chunk_file(const char *path);
+
+
+vector<Chunk> processChunks(DataSource* ds,const char *path);
+vector<Chunk> chunk_file(const char *path);
 
 void
 chunk_directory(const char *dpath);
-
-vector<chunkdat> unmatchedChunkData(vector<bool> t, vector<Chunk *> c, string path, int *total_size);
-vector<Chunk> combineUnmatchedChunks(vector<bool> unmatched, vector<Chunk*> chunkdetails);
-vector< vector < BlockChecksum> > getBlockChecksum(vector<Chunk> unmatchedChunks, string filepath);
+int getFileSize(string fullpath);
+vector<chunkdat> unmatchedChunkData(vector<bool> t, vector<Chunk> c, string path);
+void fillUnmatchedChunkData(vector<bool> indexes, vector<Chunk> chunkHead, string path, queue<chunkdat>* unmatchedChunks);
+vector<Chunk> combineUnmatchedChunks(vector<bool> unmatched, vector<Chunk> chunkdetails);
+vector<BlockChecksum> getBlockChecksum(vector<Chunk> unmatchedChunks, string filepath);
 
 string fileChecksum(const char *path);
+vector<chunkdat> getUnmatchedBlocks(vector<BlockChecksum> checksumBlocks, vector<bool> unmatchedBlockData, string filepath);
+vector<chunkdat> getmergedUnmatchedBlocks(vector<BlockChecksum> checksumBlocks, vector<bool> unmatchedBlockData,string filepath, vector<int> *blockOffsets);
+chunkdat getSmallFile(string fullpath, int filesize);

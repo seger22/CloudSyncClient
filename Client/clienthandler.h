@@ -9,6 +9,7 @@
 #include "client.h"
 #include "blockChecksumSerial.h"
 #include "chunkdat.h"
+#include "dblib.h"
 
 using namespace std;
 
@@ -25,16 +26,19 @@ public:
                instance.start_client();
                return instance;
            }*/
-    void send_chunk_hashes(vector<u_int64_t> chunk_hashes);
-    void send_chunks(vector<chunkdat> chunks, int total_size);
-    void send_data(string msg);
+    int send_chunk_hashes(vector<u_int64_t> chunk_hashes);
+    int send_chunks(vector<chunkdat> chunks);
+    int send_chunk(chunkdat chunk, int count);
+    int send_data(string msg);
     vector<bool> read_unmatched_hashes();
     string receive_data();
     void stop_client();
     void send_file(string path,string name);
-    void send_block_hashes(vector< vector <BlockChecksumSerial > > t);
+    int send_block_hashes(vector<BlockChecksumSerial> t);
 
-
+    int send_block_offsets(vector<int> block_offsets);
+    int send_chunk_offsets(vector<int> chunk_offsets);
+    int send_block_data(vector<chunkdat> blocks);
 
 private:
     boost::asio::io_service io_service_;

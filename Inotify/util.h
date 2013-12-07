@@ -2,6 +2,7 @@
 #define UTIL_H
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include <configurationmanager.h>
 using namespace std;
 class Util
 {

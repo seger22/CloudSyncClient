@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/resource">
+        <file>cloud.png</file>
+        <file>cloudsyncDB.db</file>
+    </qresource>
+</RCC>

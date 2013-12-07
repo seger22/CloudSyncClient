@@ -20,6 +20,8 @@
 #include <functional>
 #include "blockChecksumSerial.h"
 #include "chunkdat.h"
+#include "configurationmanager.h"
+#include "chunkhash.h"
 
 using boost::asio::ip::tcp;
 using namespace std;
@@ -32,42 +34,45 @@ public:
     void handle_resolve(const boost::system::error_code& err, tcp::resolver::iterator endpoint_iterator);
     void handle_connect(const boost::system::error_code& err, tcp::resolver::iterator endpoint_iterator);
     void handle_write_request(const boost::system::error_code& err);
-    void send_request(string data);
-    void send_chunk_header(vector<chunkdat> strings, int total_size);
-    void send_chunks(vector<chunkdat> chunks);
-    void send_chunk_data(string out_data);
-    vector<string> get_block_data();
-    void send_chunk_hashes(vector<u_int64_t> chunkHashes);
-    void send_chunk(chunkdat chunk);
-    vector<bool> read_unmatched_chunks();
-    bool send_buffer(string buffer);
-    void handle_write_chunk(const boost::system::error_code& error, string caller);
+    int send_header(string data); //
+
+    int send_chunk_data(vector<chunkdat> chunks); //
+    int send_block_data(vector<chunkdat> blocks); //
+    int send_file_segment(vector<chunkdat> segments, string data); //
+    int send_chunk(chunkdat chunk, int count);
+
+    int send_chunk_hashes(vector<u_int64_t> chunkHashes); //
+
+    vector<bool> read_unmatched_chunks(); //
+
     void send_file(string path, string filename);
-    void stop_client();
-    void start_client();   
-    void addChunkToQueue(chunkdat chunk);
+
+
+
     void send_string_vector(vector<string> strings);
-    string get_data_from_server();
+    string get_data_from_server(); //
     template <class T>
-    bool send_vector(vector<T> elements);
-    void send_block_hashes(vector< vector < BlockChecksumSerial> > t);
+    int send_vector(vector<T> elements); //
+    unsigned int send_integer(unsigned int n);
+    int send_buffer(unsigned char *buf, int bufsize);
+    int send_block_hashes(vector<BlockChecksumSerial> block_checksums);
+    int send_block_offsets(vector<int> block_offsets);
+    int send_chunk_offsets(vector<int> chunk_offsets);
+    unsigned int read_integer();
 
 private:
     boost::asio::io_service io_service_;
     bool sending;
     tcp::resolver resolver_;
      tcp::socket socket_;
-     std::string change_request;
-   // vector<chunk> chunks_;
+     std::string change_request;   
      boost::asio::streambuf request_;
      enum { max_length = 10240 };
      char data_[max_length];
      string watch_dir;
      string chunk[65536];
-     int chunk_max_length=65536;
+     int chunk_max_length=66000;
      queue<chunkdat> chunkq;
-//boost::asio::io_service::work client_work(client_io_service);
-    //boost::asio::io_service::work client_work;
 
 };
 

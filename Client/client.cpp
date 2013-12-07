@@ -2,9 +2,11 @@
 
 Client::Client(boost::asio::io_service& io_service_, const string &host, const string &service):resolver_(io_service_), socket_(io_service_)
 {
-    watch_dir="/home/mayuresan/Project/SyncSource";
+   // watch_dir="/home/mayuresan/Project/SyncSource";
+    watch_dir=ConfigurationManager::getLocation();
     sending=false;
     tcp::resolver::query query(host, service);
+    cout<<"To resolving query\n";
     resolver_.async_resolve(query,
                             boost::bind(&Client::handle_resolve, this,
                                         boost::asio::placeholders::error,
@@ -14,7 +16,7 @@ Client::Client(boost::asio::io_service& io_service_, const string &host, const s
 void Client::handle_resolve(const boost::system::error_code &err, tcp::resolver::iterator endpoint_iterator){
     if (!err)
     {
-        // cout<<"Gone into resolve"<<endl;
+         cout<<"Resolve success\n";
         tcp::endpoint endpoint = *endpoint_iterator;
         socket_.async_connect(endpoint,
                               boost::bind(&Client::handle_connect, this,
@@ -22,7 +24,7 @@ void Client::handle_resolve(const boost::system::error_code &err, tcp::resolver:
     }
     else
     {
-        std::cout << "Error: " << err.message() << "\n";
+        cout << "Error: " << err.message() << "\n";
     }
 }
 
@@ -53,129 +55,121 @@ void Client::handle_write_request(const boost::system::error_code &err)
     }
 }
 
-
-void Client::send_request(string request)
+//
+int Client::send_header(string request)
 {
-    boost::system::error_code err;
+    /*boost::system::error_code err;
     strcpy(data_,request.c_str());
-
-    boost::asio::write(socket_,boost::asio::buffer(data_,1024),err);   
+    return boost::asio::write(socket_,boost::asio::buffer(data_,1024),err);*/
+    int len=request.size();
+    char bytes[2]={0,0};
+    bytes[0] = (len >> 8) & 0xFF;
+    bytes[1] = len & 0xFF;
+    boost::asio::streambuf buf;
+    ostream os(&buf);
+    os<<bytes[0]<<bytes[1]<<request;
+  //  cout<<"Request: "<<request<<endl;
+    return boost::asio::write(socket_,buf);
 }
 
 
+//
 string Client::get_data_from_server(){
-    char ret_data[1024];
-    boost::system::error_code err;
-    socket_.read_some(boost::asio::buffer(ret_data),err);
-    if(!err){
-        string res(ret_data);        
+    char ret_data[1024]={0};  
+   // socket_.read_some(boost::asio::buffer(ret_data),err);
+    int read_size=this->read_integer();
+    boost::asio::read(socket_,boost::asio::buffer(ret_data,read_size));
+        string res(ret_data);
         return res;
-    }
-    else{
-        cout<<err.message()<<endl;
-        return NULL;
-    }
 }
 
 
-void Client::send_chunk_header(vector<chunkdat> strings, int total_size)
-{    
-    int file_wsize=0;
+unsigned int Client::read_integer(){
+    unsigned int num=0;
+    unsigned char bytes[4]={0};
+    boost::asio::read(socket_, boost::asio::buffer(bytes,4));
+    num|=bytes[0] & 0xFF;
+    num<<=8;
+    num|=bytes[1] & 0xFF;
+    num<<=8;
+    num|=bytes[2] & 0xFF;
+    num<<=8;
+    num|=bytes[3] & 0xFF;
+    return num;
+}
+
+
+
+int Client::send_chunk(chunkdat chunk, int count){
+    boost::system::error_code err;
+    int total_sent=0;
+    int len=chunk.chunk_size;
+    char bytes[3]={0,0,0};
+    bytes[0] = (len >> 16) & 0xFF;
+    bytes[1] = (len >> 8) & 0xFF;
+    bytes[2] = len & 0xFF;
+
+    boost::asio::streambuf chunk_buf;
+    ostream isdata(&chunk_buf);
+    isdata<<bytes[0]<<bytes[1]<<bytes[2];
+
+    total_sent+=boost::asio::write(socket_,chunk_buf,boost::asio::transfer_exactly(3));
+    //cout<<"Sending chunk: "<<count<<" with size: "<<len<<endl;
+    total_sent+=boost::asio::write(socket_,boost::asio::buffer(chunk.data,len),err);
+    if(err){
+        cout<<"Error:"<<err.message()<<" in chunk:"<<count<<endl;
+        return -1;
+    }
+    return total_sent;
+}
+
+//
+int Client::send_file_segment(vector<chunkdat> segments, string data){
+    int total_sent=0;
+    cout<<"Sending "<<segments.size()<<" "<<data<<"s...\n";
 
     boost::system::error_code err;
 
-    int count=strings.empty() ? 0:strings.size();
+    int count=segments.empty() ? 0:segments.size();
 
-    this->send_request(boost::lexical_cast<string>(count));
+    this->send_header(boost::lexical_cast<string>(count));
+
 
     for(int j=0;j<count;j++)
     {
-        int len=strings[j].chunk_size;
+        int len=segments[j].chunk_size;
         char bytes[3]={0,0,0};
         bytes[0] = (len >> 16) & 0xFF;
         bytes[1] = (len >> 8) & 0xFF;
         bytes[2] = len & 0xFF;
 
-        file_wsize+=len;
         boost::asio::streambuf chunk_buf;
         ostream isdata(&chunk_buf);
-        isdata<<"A"<<bytes[0]<<bytes[1]<<bytes[2]<<"d";
+        isdata<<bytes[0]<<bytes[1]<<bytes[2];
 
-        //cout<<"Sending chunk with size:"<<len<<endl;
-       // cout<<"Sending chunks in bytes: "<<(int)bytes[1]<<"And :"<<(int)bytes[0]<<endl;
 
-        boost::asio::write(socket_,chunk_buf,boost::asio::transfer_exactly(5));
-        cout<<"Sending chunk:"<<j+1<<" of "<<count<<" with size "<<len<<endl;
 
-        boost::asio::write(socket_,boost::asio::buffer(strings[j].data,len),err);
+        boost::asio::write(socket_,chunk_buf,boost::asio::transfer_exactly(3));
+     //   cout<<"Sending "<<data<<" "<<j+1<<" of "<<count<<" with size "<<len<<endl;
+
+        total_sent+=boost::asio::write(socket_,boost::asio::buffer(segments[j].data,len),err);
 
         if(err)
             cout<<"Error:"<<err.message()<<" in chunk:"<<j+1<<endl;
     }
-    cout<<"Send file size:"<<file_wsize<<endl;
+    cout<<"Sent unmatched "<<data<<" successfully!!\n\n";
+    return total_sent;
 }
 
-
-void Client::send_string_vector(vector<string> strings)
-{
-    std::string outbound_data_;
-    std::ostringstream archive_stream;
-    boost::archive::text_oarchive archive(archive_stream);
-    archive << strings;
-    outbound_data_ = archive_stream.str();
-    //   cout<<"Out size:"<<outbound_data_.size()<<endl;
-    //char response[max_length];
-    std::vector<boost::asio::const_buffer> buffers;
-    buffers.push_back(boost::asio::buffer(outbound_data_));
-    boost::system::error_code err;
-    size_t send=boost::asio::write(socket_,buffers,err);
-    //  cout<<"Sent amount: "<<send<<endl;
+//
+int Client::send_chunk_data(vector<chunkdat> chunks){
+    return this->send_file_segment(chunks,"chunk");
 }
 
-
-
-
-void Client::send_chunk_data(string out_data){
-    string buf_data;
-    int str_size=out_data.size();
-    size_t sentsize=0;
-    boost::system::error_code ec;
-    int count=0;
-    while(count+max_length-1<str_size){
-        buf_data=out_data.substr(count,max_length) ;
-        cout<<"Size of buf_data:"<<buf_data.length()<<endl;
-
-        //cout<<"Sent data is : "<<buf_data<<endl;
-
-        sentsize=boost::asio::write(socket_,boost::asio::buffer(buf_data,buf_data.length()),ec);
-        if(!ec){
-            cout<<"chunks sent successfully"<<endl;
-            cout<<"Sent size: "<<sentsize<<endl;
-        }
-        else{
-            cout<<"Chunk sending Wrong with :"<<ec.message()<<endl;
-            cout<<"Sent size: "<<sentsize<<endl;
-            break;
-        }
-        count+=max_length;
-    }
-    buf_data=out_data.substr(count,str_size-count);
-
-    vector<boost::asio::const_buffer> buffers;
-    buffers.push_back(boost::asio::buffer(buf_data));
-
-    sentsize=boost::asio::write(socket_,buffers,ec);
-    if(!ec){
-        cout<<"chunk sent successfully"<<endl;
-        cout<<"Sent size: "<<sentsize<<endl;
-    }
-    else{
-        cout<<"Chunk sending Wrong with :"<<ec.message()<<endl;
-        cout<<"Sent size: "<<sentsize<<endl;
-        //break;
-    }
+//
+int Client::send_block_data(vector<chunkdat> blocks){
+    return this->send_file_segment(blocks,"block");
 }
-
 
 void Client::send_file(string path, string filename)
 {
@@ -193,6 +187,12 @@ void Client::send_file(string path, string filename)
     }
     file_size = source_file.tellg();
     std::cout<<"file size :"<<file_size<<std::endl;
+
+    boost::asio::streambuf request;
+            std::ostream request_stream(&request);
+            request_stream <<file_size << "\n\n";
+            boost::asio::write(socket_, request);
+            std::cout << "start sending file content.\n";
 
     source_file.seekg(0);
     for (;;)
@@ -217,113 +217,150 @@ void Client::send_file(string path, string filename)
         else
             break;
     }
+    char response[10]={0};
+    boost::asio::read(socket_,boost::asio::buffer(response,2));
+    cout<<"Got response: "<<response<<endl;
+    source_file.close();
 
 }
 
 
-void Client::stop_client()
-{
-    //client_io_service.stop();
-    //threads.join_all();
-}
 
-void printnum(int c){
-    cout<<c<<endl;
-}
+//
+int Client::send_chunk_hashes(vector<u_int64_t> chunkHashes){
 
-bool Client::send_buffer(string buffer)
-{
-    std::vector<boost::asio::const_buffer> buffers;
-    buffers.push_back(boost::asio::buffer(buffer));
-    boost::system::error_code err;
-    cout<<"Writing data "<<buffer<<endl;
-    boost::asio::write(socket_,boost::asio::buffer(buffer,max_length),err);
-    if(err){
-        cout<<"Error occured with "<<err.message()<<endl;
-        return false;
+    int size=0;
+    size+=this->send_integer(chunkHashes.size());
+    for(int j=0;j<chunkHashes.size();j++){
+        chunkhash hashbytes;
+        u_int64_t hash=chunkHashes[j];
+        for(int i=0;i<8;i++){
+
+            hashbytes.data[i]= (hash >> (8-i-1)*8) & 0xFF;
+
+        }
+
+        size+=this->send_buffer(hashbytes.data,8);
     }
-    else{
-        cout<<"Chunk hashed Sent Successfully"<<endl;
-        return true;
+    return size;
+}
+
+
+int Client::send_block_offsets(vector<int> block_offsets){
+
+    int size=0;
+    size+=this->send_integer(block_offsets.size());
+    for(unsigned int i=0; i<block_offsets.size();i++){
+        size+=this->send_integer(block_offsets[i]);
     }
+    return size;
 }
 
+//
+int Client::send_chunk_offsets(vector<int> chunk_offsets){
 
-void Client::send_chunk_hashes(vector<u_int64_t> chunkHashes){
-    bool err=this->send_vector<u_int64_t>(chunkHashes);
-    if(err){
-       // cout<<"Error occured with "<<err.message()<<endl;
+    int size=0;
+    size+=this->send_integer(chunk_offsets.size());
+    for(unsigned int i=0; i<chunk_offsets.size();i++){
+        size+=this->send_integer(chunk_offsets[i]);
     }
-    else
-        cout<<"Sent chunk hashes successfully!!\n"  ;
+    return size;
+}
 
+//
+int Client::send_block_hashes(vector<BlockChecksumSerial>  block_checksums){
+
+    int sent_size=0;
+    sent_size+=this->send_integer(block_checksums.size());
+    for(int i=0;i<block_checksums.size();i++){
+        BlockChecksumSerial block=block_checksums[i];
+        sent_size+=send_integer(block.getWeeksum());
+        sent_size+=send_buffer(block.strongsum,sizeof(block.strongsum));
+    }
+    return sent_size;
 }
 
 
-void Client::send_block_hashes(vector<vector<BlockChecksumSerial> > t){
-    this->send_vector< vector <BlockChecksumSerial> > (t);
+unsigned int Client::send_integer(unsigned int n){
+    unsigned char bytes[4];
+    bytes[0] = (n >> 24) & 0xFF;
+    bytes[1] = (n >> 16) & 0xFF;
+    bytes[2] = (n >> 8) & 0xFF;
+    bytes[3] = n & 0xFF;   
+    return boost::asio::write(socket_,boost::asio::buffer(bytes),boost::asio::transfer_exactly(4));
 }
 
+int Client::send_buffer(unsigned char *buf, int bufsize){
+    return boost::asio::write(socket_, boost::asio::buffer(buf,bufsize),boost::asio::transfer_exactly(bufsize));
+}
+
+
+//
 template <class T>
-bool Client::send_vector(vector<T> v){
-    std::string outbound_data_;
-    std::ostringstream archive_stream;
+int Client::send_vector(vector<T> v){
+    int sent_size=0;
+    string outbound_data_;
+    ostringstream archive_stream;
     boost::archive::text_oarchive archive(archive_stream);
     archive << v;
     outbound_data_ = archive_stream.str();
     char response[max_length];
 
-    boost::system::error_code err;    
+    boost::system::error_code err;
     boost::asio::streambuf buf;
     ostream os(&buf);
     os<<outbound_data_.size()<<"\r\n";
-    cout<<"Size of data sending:"<<outbound_data_.size()<<endl;
-    boost::asio::write(socket_,buf);
-    boost::asio::write(socket_,boost::asio::buffer(outbound_data_,outbound_data_.size()),err);
+    //  cout<<"Outbound data size: "<<outbound_data_.size()<<endl;
+    sent_size+=boost::asio::write(socket_,buf);
+    sent_size+=boost::asio::write(socket_,boost::asio::buffer(outbound_data_,outbound_data_.size()),err);
     socket_.read_some(boost::asio::buffer(response),err);
     if(err){
         cout<<"Error occured with "<<err.message()<<endl;
-        return false;
+        return -1;
     }
-    return true;
+    return sent_size;
 }
 
 
-
+//
 vector<bool> Client::read_unmatched_chunks()
 {
     cout<<"Reading unmatched hash indexes...\n";
     int arr_size;
+    size_t bool_got_size;
     boost::system::error_code err;
     boost::asio::streambuf strbuf;
     vector<bool> t;
     char excessdata[max_length]={0};
     string input="";
-    size_t got_size= boost::asio::read_until(socket_,strbuf,"\r\n");
+    boost::asio::read_until(socket_,strbuf,"\r\n");
     istream is(&strbuf);
     is>>arr_size;
-    cout<<"Got size as:"<<arr_size<<endl;
     strbuf.consume(2);
     if(strbuf.size()>0){
         arr_size-=strbuf.size();
         is.read(excessdata,strbuf.size());
-        input=excessdata;
-        //cout<<"Got excess data as:"<<input<<endl;
+        input=excessdata;       
     }
     if(arr_size>0){
-char unmatch_data[arr_size];
+        char unmatch_data[arr_size];
 
-   got_size=boost::asio::read(socket_,boost::asio::buffer(unmatch_data,arr_size),err);
-string temp=unmatch_data;
-temp=temp.substr(0,got_size);
-    input+=temp;
+        boost::asio::read(socket_,boost::asio::buffer(unmatch_data,arr_size),err);
+        string temp=unmatch_data;       
+        input+=temp;
     }
-    //cout<<"Got data :"<<input<<"with size:"<<got_size<<endl;
 
-    std::istringstream archive_stream_input(input);
-    boost::archive::text_iarchive archive_in(archive_stream_input);
-    archive_in >> t;
+    try{
+        std::istringstream archive_stream_input(input);
+        boost::archive::text_iarchive archive_in(archive_stream_input);
+        archive_in >> t;
+    }
+    catch(boost::archive::archive_exception& ex){
+        cout<<"Error occurred while receiving unmatched chunks, with:\n"<<ex.what()<<endl;
+    }
+
     return t;
+
 }
 
 

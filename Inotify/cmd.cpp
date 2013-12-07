@@ -24,7 +24,7 @@ string CMD::get_path_from_inode(string inode){
         FILE *in;
         char buff[512];
         string command="find /home -inum ";
-        command+=inode;
+        command+=inode+" 2>/dev/null";
     //find path -inum 2635617
     //ls -il filename
 //find /home -inum 1845319

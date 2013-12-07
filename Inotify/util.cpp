@@ -38,7 +38,8 @@ string Util::get_relative_path(string abosolute_path){
  */
 string Util::get_root_path(){
 // to do , read from external file
-    string root_dir="/home/mayuresan/Project/SyncSource";
+  //  string root_dir="/home/mayuresan/Project/SyncSource";
+      string root_dir=ConfigurationManager::getLocation();   
     return   root_dir;
 }
 
@@ -56,6 +57,7 @@ size_t Util::get_dir_size(std::string abosolute_path){
 
     if(boost::filesystem3::exists(abosolute_path)){
         size_t size;
+        try{
         boost::filesystem::recursive_directory_iterator itr(abosolute_path);
 
         while (itr != boost::filesystem::recursive_directory_iterator())
@@ -67,6 +69,9 @@ size_t Util::get_dir_size(std::string abosolute_path){
             }
             ++itr;
 
+        }
+        }catch(boost::filesystem::filesystem_error &ex){
+            cerr << "Boost file system exception occured: " << ex.what() << endl;
         }
         return size;
     }

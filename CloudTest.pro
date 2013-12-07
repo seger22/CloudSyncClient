@@ -1,13 +1,21 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    DBlib \
+trayicon \
     LibInotify \
-LibChecksum \
+    LibChecksum \
     Client \
     Inotify \
-    Start \
     LibRabin \
-    LibSha
+    LibSha \
+    FileHandler \
+    ChunkHandler \
+    BlockHandler \
+    DeltaHandler \
+Start \
+ConfigurationManager \
+    Zdelta
 
 
 
