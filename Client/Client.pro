@@ -61,8 +61,11 @@ INCLUDEPATH += $$PWD/../LibSha
 DEPENDPATH += $$PWD/../LibSha
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 34197256fb4986b0d90cb96dcde07edd565aa4ee
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../LibChecksum/release/ -lLibChecksum
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../LibChecksum/debug/ -lLibChecksum
 else:unix: LIBS += -L$$OUT_PWD/../LibChecksum/ -lLibChecksum

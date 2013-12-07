@@ -5,9 +5,12 @@
 #include<sys/stat.h>
 #include<string.h>
 #include<boost/lexical_cast.hpp>
+<<<<<<< HEAD:FileHandler/filehandler.h
 #include  "chunkhandler.h"
+=======
+#include "chunkhandler.h"
+>>>>>>> 34197256fb4986b0d90cb96dcde07edd565aa4ee:Client/filehandler.h
 #include "clienthandler.h"
-#include "librsync.h"
 #include "chunkdat.h"
 #include "blockChecksumSerial.h"
 #include "blockhandler.h"

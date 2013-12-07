@@ -73,6 +73,7 @@ else:unix: LIBS += -L$$OUT_PWD/../LibChecksum/ -lLibChecksum
 INCLUDEPATH += $$PWD/../LibChecksum
 DEPENDPATH += $$PWD/../LibChecksum
 
+<<<<<<< HEAD
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../FileHandler/release/ -lFileHandler
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../FileHandler/debug/ -lFileHandler
 else:unix: LIBS += -L$$OUT_PWD/../FileHandler/ -lFileHandler
@@ -124,3 +125,5 @@ else:unix: LIBS += -L$$OUT_PWD/../ConfigurationManager/ -lConfigurationManager
 
 INCLUDEPATH += $$PWD/../ConfigurationManager
 DEPENDPATH += $$PWD/../ConfigurationManager
+=======
+>>>>>>> 34197256fb4986b0d90cb96dcde07edd565aa4ee

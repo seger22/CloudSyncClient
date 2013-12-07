@@ -9,7 +9,7 @@
 #include "chunkdat.h"
 #include "librsync.h"
 #include "checksum.h"
-#include<fstream>
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <iostream>
